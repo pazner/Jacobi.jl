@@ -101,7 +101,7 @@ function wgj(z::AbstractArray{T}, alpha=0, beta=0) where {T<:Number}
 
     Q::Int = length(z)
     o = one(T)
-    coef = 2^(a+b+1) * ( gamma(a+Q+1) / gamma(Q+o) ) * (gamma(b+Q+1) / gamma(a+b+Q+1))
+    coef = 2^(a+b+1) * exp(lgamma(a+Q+1) - lgamma(Q+o) + lgamma(b+Q+1) - lgamma(a+b+Q+1))
     w = [djacobi(zz, Q, a, b) for zz=z]
 
     for i = 1:Q
@@ -120,8 +120,7 @@ function wglj(z::AbstractArray{T}, alpha=0, beta=0) where {T<:Number}
     o = one(T)
     Q = length(z)
 
-    coef = 2^(a+b+1) / (Q-o) * (gamma(a+Q) / gamma(Q*o)) * (gamma(b+Q) / gamma(a+b+Q+1))
-
+    coef = 2^(a+b+1) / (Q-o) * exp(lgamma(a+Q) - lgamma(Q*o) + lgamma(b+Q) - lgamma(a+b+Q+1))
     w = [jacobi(zz, Q-1, a, b) for zz=z]
     w[1] = (b+1) * coef / (w[1]*w[1])
     w[Q] = (a+1) * coef / (w[Q]*w[Q])
@@ -141,7 +140,7 @@ function wgrjm(z::AbstractArray{T}, alpha=0, beta=0) where {T<:Number}
 
     Q = length(z)
 
-    coef = 2^(a+b) / (b+Q) * (gamma(a+Q) / gamma(Q*o)) * (gamma(b+Q) / gamma(a+b+Q+1))
+    coef = 2^(a+b) / (b+Q) * exp(lgamma(a+Q) - lgamma(Q*o) + lgamma(b+Q) - lgamma(a+b+Q+1))
 
     w = [jacobi(zz, Q-1, a, b) for zz=z]
 
@@ -162,7 +161,7 @@ function wgrjp(z::AbstractArray{T,1}, alpha=0, beta=0) where {T<:Number}
     Q = length(z)
     o = one(T)
 
-    coef = 2^(a+b) / (a+Q) * (gamma(a+Q) / gamma(Q*o)) * (gamma(b+Q) / gamma(a+b+Q+1))
+    coef = 2^(a+b) / (a+Q) * exp(lgamma(a+Q) - lgamma(Q*o) + lgamma(b+Q) - lgamma(a+b+Q+1))
 
     w = [jacobi(zz, Q-1, a, b) for zz=z]
 
@@ -209,8 +208,8 @@ function dglj(z::AbstractArray{T,1}, alpha=0, beta=0) where {T<:Number}
     o = one(T)
 
     djac = zeros(T,Q)
-    djac[1] = (-1)^Q * 2  *  gamma(Q + b) / (gamma(Q-o) * gamma(b+2))
-    djac[Q] = -2*gamma(Q+a) / (gamma(Q-o)*gamma(a+2))
+    djac[1] = (-1)^Q * 2 * exp(lgamma(Q + b) - (lgamma(Q-o) + lgamma(b+2)))
+    djac[Q] = -2 * exp(lgamma(Q+a) - (lgamma(Q-o) + lgamma(a+2)))
     for i = 2:(Q-1)
         djac[i] = (o-z[i]*z[i]) * djacobi(z[i], Q-2, a+1, b+1)
     end
@@ -245,7 +244,7 @@ function dgrjm(z::AbstractArray{T,1}, alpha=0, beta=0) where {T<:Number}
     for i = 2:Q
         djac[i] = (1+z[i]) * djacobi(z[i], Q-1, a, b+1)
     end
-    djac[1] = (-1)^(Q-1) *  gamma(Q + b + 1) / (gamma(Q*o) * gamma(b+2))
+    djac[1] = (-1)^(Q-1) * exp(lgamma(Q + b + 1) - (lgamma(Q*o) + lgamma(b+2)))
 
     D = zeros(T, Q, Q)
     for i = 1:Q
@@ -276,7 +275,7 @@ function dgrjp(z::AbstractArray{T,1}, alpha=0, beta=0) where {T<:Number}
     for i = 1:(Q-1)
         djac[i] = (1-z[i]) * djacobi(z[i], Q-1, a+1, b)
     end
-    djac[Q] = - gamma(Q + a + 1) / (gamma(Q*o) * gamma(a+2))
+    djac[Q] = - exp(lgamma(Q + a + 1) - lgamma(Q*o) + lgamma(a+2))
 
     D = zeros(T, Q, Q)
     for i = 1:Q
@@ -327,8 +326,8 @@ qzeros(::Type{GRJP}, Q, a=0, b=0, ::Type{T}=Float64) where {T<:Number} = zgrjp(Q
 """
 Return the weights of a Gauss type quadrature
 """
-qweights(::Type{GJ}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = wgj(z, a, b) 
-qweights(::Type{GLJ}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = wglj(z, a, b) 
+qweights(::Type{GJ}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = wgj(z, a, b)
+qweights(::Type{GLJ}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = wglj(z, a, b)
 qweights(::Type{GRJM}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = wgrjm(z, a, b)
 qweights(::Type{GRJP}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = wgrjp(z, a, b)
 
@@ -336,7 +335,7 @@ qweights(::Type{GRJP}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = wgrjp(
 Return the derivative matrix of a Gauss type quadrature
 """
 qdiff(::Type{GJ}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = dgj(z, a, b)
-qdiff(::Type{GLJ}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = dglj(z, a, b) 
+qdiff(::Type{GLJ}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = dglj(z, a, b)
 qdiff(::Type{GRJM}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = dgrjm(z, a, b)
 qdiff(::Type{GRJP}, z::AbstractArray{T}, a=0, b=0) where {T<:Number} = dgrjp(z, a, b)
 
@@ -354,7 +353,7 @@ function Quadrature(::Type{QT}, Q, a=0, b=0, ::Type{T}=Float64) where {T<:Number
 end
 
 "Return quadrature type"
-qtype(q::Quadrature{T,QT}) where {T,QT} = QT 
+qtype(q::Quadrature{T,QT}) where {T,QT} = QT
 "Return quadrature nodes"
 qzeros(q::QT) where {QT<:Quadrature} = q.z
 "Return quadrature weights"
@@ -433,4 +432,3 @@ end
 @doc (@doc zgj) dglj
 @doc (@doc zgj) dgrjm
 @doc (@doc zgj) dgrjp
-
