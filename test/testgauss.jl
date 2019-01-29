@@ -20,7 +20,6 @@ Xg = sum(qweights(q) .* y)
 #Xg= sum(qweights(q2) .* y)
 #@test abs(Xg-X) 0.0 200*eps(Xg)
 
-
 # Weights a=1, b=2
 p2 = p * Poly([1, -1]) * Poly([1, 1])^2
 p2_int = polyint(p2)
@@ -164,7 +163,6 @@ dy = polyval(dp, z)
 dyg = qdiff(q) * y
 @test maximum(abs,dy-dyg) ≈ 0.0 atol=1000*eps(maximum(abs,dy))
 
-
 # GRJM
 Q = 10
 N = 10
@@ -177,7 +175,6 @@ dy = polyval(dp, z)
 dyg = qdiff(q) * y
 @test maximum(abs,dy-dyg) ≈ 0.0 atol=1000*eps(maximum(abs,dy))
 
-
 # GRJP
 Q = 10
 N = 10
@@ -189,7 +186,6 @@ y = polyval(p, z)
 dy = polyval(dp, z)
 dyg = qdiff(q) * y
 @test maximum(abs,dy-dyg) ≈ 0.0 atol=1000*eps(maximum(abs,dy))
-
 
 # GLJ
 Q = 10
@@ -213,7 +209,6 @@ y = polyval(p, z)
 dy = polyval(dp, z)
 dyg = qdiff(q) * y
 @test maximum(abs,dy-dyg) ≈ 0.0 atol=1000000*eps(maximum(abs,dy))
-
 
 # Test interpolation:
 # GJ
