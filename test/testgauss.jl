@@ -212,7 +212,7 @@ z = qzeros(q)
 y = polyval(p, z)
 dy = polyval(dp, z)
 dyg = qdiff(q) * y
-@test_approx_eq_eps maxabs(dy-dyg) 0.0 1000000*eps(maxabs(dy))
+@test maximum(abs,dy-dyg) ≈ 0.0 atol=1000000*eps(maximum(abs,dy))
 
 
 # Test interpolation:
@@ -229,5 +229,3 @@ u = polyval(p, z)
 I = interp_mat(x, z)
 ui = I * u
 @test maximum(abs,ui-ue) ≈ 0.0 atol=200*eps(maximum(abs,u))
-
-
